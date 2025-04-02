@@ -1,0 +1,96 @@
+NYU NLP Homework 5: Feature selection for Maxent Group tagger
+    by WENJIE ZHANG wz2427
+    Spring 2025
+
+
+
+
+To improve the performance of the MaxEnt chunk tagger and push the F1 score beyond a standard 92, I implemented a variety of enhanced linguistic and contextual features in the make_features.py script. These were inspired by established methods in chunking and sequence labeling literature.
+
+1. Rich Word Shape Features
+We expanded beyond simple capitalization checks to include:
+
+ALL_CAPS, ALL_LOWER, INIT_CAP
+
+HAS_DIGIT, HAS_HYPHEN, HAS_PUNCT, ALPHANUM
+
+These help capture acronyms, numeric expressions, and orthographic cues often associated with chunk boundaries.
+
+2. Prefix and Suffix Features
+For each word, we included:
+
+Prefixes and suffixes of length 2, 3, and 4 (PREF2, PREF3, PREF4, SUFF2, SUFF3, SUFF4)
+
+These help generalize to unseen words by identifying morphological patterns like -ing, -ed, un-, etc.
+
+3. POS Bigram Features
+We introduced:
+
+PREV_CURR_POS (e.g., DT_NN)
+
+CURR_NEXT_POS (e.g., NN_IN)
+
+These help the model learn transitions between common part-of-speech sequences relevant to noun phrase structures.
+
+4. Lexical Class Indicators
+We checked whether the word belongs to small curated dictionaries and added flags:
+
+DET for determiners (e.g., "the", "this")
+
+QUANT for quantifiers (e.g., "many", "two")
+
+PREP for prepositions (e.g., "of", "in")
+
+NP_HEAD for pronouns or frequent NP-ending nouns (e.g., "he", "company")
+
+These features highlight likely NP boundaries or heads.
+
+5. Word Cluster Feature
+We added a coarse WORD_CLASS feature that categorizes each word as:
+
+number, date, capitalized, lowercase, or other
+
+This generalization improves robustness to unknown or rare words.
+
+6. Extended Context Window
+A full 2-word context window was used:
+
+Previous two and next two words and POS tags (PREV2_WORD, NEXT2_POS, etc.)
+
+This gives the model broader syntactic context for more accurate chunk boundary detection.
+
+7. Previous Chunk Tag Feature
+We included Previous_BIO:
+
+In training, it's the actual previous chunk label.
+
+In testing, it is a placeholder @@, replaced during inference.
+
+This allows the model to condition decisions on the prior chunk tag, simulating a sequential model.
+
+
+
+
+
+To Score, make sure you are in WSJ_CHUNK_FILES, use: python score.chunk.py WSJ_24.pos-chunk response.chunk
+My Score using the score.chunk.py is :
+    31865 out of 32853 tags correct
+    accuracy: 96.99
+    8378 groups in key
+    8467 groups in response
+    7802 correct groups
+      precision: 92.15
+      recall:    93.12
+      F1:         9.26
+      rounded to: 9
+
+Score on Gradescope (NYU System):
+    57672 out of 59100 tags correct
+    accuracy: 97.58
+    14666 groups in key
+    14824 groups in response
+    13855 correct groups
+    precision: 93.46
+    recall:    94.47
+    F1:         9.40
+
